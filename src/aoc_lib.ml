@@ -1,3 +1,4 @@
+open Core
 let input_line_opt ic =
   try Some (input_line ic)
   with End_of_file -> None
@@ -16,3 +17,7 @@ let lines_of_file filename =
   close_in ic;
   (lines)
 
+let csv_of_file filename =
+  match lines_of_file filename with
+  | [line] -> String.split_on_chars ~on:[','] line
+  | _ -> []
