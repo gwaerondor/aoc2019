@@ -1,13 +1,30 @@
 open Aoc_lib
 open Core
 
-let day01_a =
-  let to_numbers = List.map ~f:int_of_string in
-  let masses = to_numbers (Aoc_lib.lines_of_file "input01.txt") in
-  let thirds = List.map masses ~f:((Fn.flip (/)) 3) in
-  let finals = List.map thirds ~f:((+) (-2)) in
-  List.fold_left ~f:(+) ~init:0 finals
+let to_numbers = List.map ~f:int_of_string
+let inputs = to_numbers (Aoc_lib.lines_of_file "input01.txt")
+
+let fuel_consumption mass = (mass / 3) - 2
+let consumption_per_module = List.map ~f:fuel_consumption inputs
+let sum = List.fold_left ~f:(+) ~init:0
+
+let day01_a = sum consumption_per_module
+
+let rec calculate_mass_with_added_fuel mass ~acc:sum =
+    match fuel_consumption mass with
+    | fc when fc > 0 -> calculate_mass_with_added_fuel fc ~acc:(sum + fc)
+    | _ -> sum
+
+let day01_b =
+  List.map ~f:(calculate_mass_with_added_fuel ~acc:0) consumption_per_module
+  |> sum
 
 let () =
-  print_int day01_a;
+  let module_fuel = day01_a in
+  print_string "Part 1: ";
+  print_int module_fuel;
+  print_newline ();
+  let additional_fuel = day01_b in
+  print_string "Part 2: ";
+  print_int (additional_fuel + module_fuel);
   print_newline ()
