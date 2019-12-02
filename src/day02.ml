@@ -31,9 +31,19 @@ let rec execute ~params ~pos =
      execute ~params:params ~pos:(pos + 4)
   | None -> raise Division_by_zero
 
+(* let print_array arr =
+ *   String.concat ~sep:"; " (Array.to_list (Array.map ~f:string_of_int arr))
+ *   |> print_string;
+ *   print_newline () *)
+
+let adjust_input =
+  input.(1) <- 12;
+  input.(2) <- 2
+
 let day02_1 =
-  String.concat ~sep:"; " (Array.to_list (Array.map ~f:string_of_int input))
-  |> print_string;
+  adjust_input;
   execute ~params:input ~pos:0
 
-let () = Printf.printf "Part 1: %d\n" day02_1
+let () =
+  Printf.printf "Part 1: %d\n" (day02_1)
+
