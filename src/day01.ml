@@ -21,10 +21,5 @@ let day01_b =
 
 let () =
   let module_fuel = day01_a in
-  print_string "Part 1: ";
-  print_int module_fuel;
-  print_newline ();
-  let additional_fuel = day01_b in
-  print_string "Part 2: ";
-  print_int (additional_fuel + module_fuel);
-  print_newline ()
+  Printf.printf "Part 1: %d\n" module_fuel;
+  Printf.printf "Part 2: %d\n" (module_fuel + day01_b)

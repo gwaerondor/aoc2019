@@ -15,29 +15,27 @@ let op_to_fun = function
   | Mul -> ( * )
   | Break -> raise Bad_argument
 
-let rec execute ~params ~pos =
-  let operator = get_operator params pos in
-  match operator with
-  | Break -> params.(0)
+let rec execute ~state ~pos =
+  match get_operator state pos with
+  | Break -> state.(0)
   | op ->
-     let val_a = params.(params.(pos + 1)) in
-     let val_b = params.(params.(pos + 2)) in
-     let target_pos = params.(pos + 3) in
-     params.(target_pos) <- ((op_to_fun op) val_a val_b);
-     execute ~params:params ~pos:(pos + 4)
+     let val_a = state.(state.(pos + 1)) in
+     let val_b = state.(state.(pos + 2)) in
+     let target_pos = state.(pos + 3) in
+     state.(target_pos) <- ((op_to_fun op) val_a val_b);
+     execute ~state:state ~pos:(pos + 4)
 
-let adjust_input ~noun ~verb ~input =
-  input.(1) <- noun;
-  input.(2) <- verb
+let adjust_state ~noun ~verb ~state =
+  state.(1) <- noun;
+  state.(2) <- verb
 
 let run ~noun ~verb =
   let input =
-    Aoc_lib.csv_of_file "input02.txt"
-    |> List.map ~f:int_of_string
-    |> List.to_array
+    Aoc_lib.array_of_csv_of_file "input02.txt"
+    |> Array.map ~f:int_of_string
   in
-  adjust_input ~noun:noun ~verb:verb ~input:input;
-  execute ~params:input ~pos:0
+  adjust_state ~noun:noun ~verb:verb ~state:input;
+  execute ~state:input ~pos:0
 
 let day02_1 = run ~noun:12 ~verb:2
 
@@ -54,5 +52,5 @@ let day02_2 =
   100 * res_noun + res_verb
 
 let () =
-  Printf.printf "Part 1: %d\n" (day02_1);
-  Printf.printf "Part 2: %d\n" (day02_2)
+  Printf.printf "Part 1: %d\n" day02_1;
+  Printf.printf "Part 2: %d\n" day02_2
