@@ -1,6 +1,6 @@
 open Core
 exception Bad_argument
-            
+
 let input_line_opt ic =
   try Some (input_line ic)
   with End_of_file -> None
@@ -34,3 +34,9 @@ let array_of_csv_of_file = List.to_array <. csv_of_file
 let char_list_of_string = String.to_list
 let string_of_char_list = String.concat <. List.map ~f:String.of_char
 let int_of_char_list = int_of_string <. string_of_char_list
+let char_list_of_int = char_list_of_string <. string_of_int
+
+let rec range a b =
+  if a < b then a :: (range (a + 1) b)
+  else if a > b then a :: (range (a - 1) b)
+  else [a]

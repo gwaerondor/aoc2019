@@ -3,11 +3,6 @@ open Aoc_lib
 type dir = Up | Down | Left | Right
 type steps = Steps of dir * int
 
-let rec range a b =
-  if a < b then a :: (range (a + 1) b)
-  else if a > b then a :: (range (a - 1) b)
-  else [a]
-
 let make_pos x y = (x, y)
 
 let parse_dir = function
