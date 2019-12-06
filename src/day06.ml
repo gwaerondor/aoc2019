@@ -13,6 +13,8 @@ let parse_orbit = function
 let orbits = List.map ~f:(String.split_on_chars ~on:[')']) input
             |> List.map ~f:parse_orbit
 
+let nodes_in_orbit (Orbit (n1, n2)) = [n1; n2]
+
 let day06_1 = List.length orbits
 
 let () =
