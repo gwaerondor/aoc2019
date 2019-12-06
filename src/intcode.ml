@@ -1,7 +1,13 @@
 open Core
 open Aoc_lib
 type op = Add | Mul | Break | Input | Output
-type parameter_mode = Position | Immediate
+type mode = Position | Immediate
+type operation =
+  | Nullary of op
+  | Unary of (mode * op)
+  | Binary of (mode * mode * op)
+  | Trinary of (mode * mode * mode * op)
+
 exception Bad_argument
 
 let pad_to_two = function
@@ -12,7 +18,8 @@ let parse_operator data =
   char_list_of_int data |> pad_to_two |> String.of_char_list
 
 let get_operator params pos =
-  match params.(pos) |> parse_operator with
+  let instruction = pad_to_five params.(pos) in
+  match parse_operator instruction with
   | "01" -> (Position, Add)
   | "02" -> (Position, Mul)
   | "99" -> (Position, Break)
