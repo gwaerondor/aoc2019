@@ -1,6 +1,6 @@
 open Core
 open Aoc_lib
-type op = Add | Mul | Break | Input | Output
+type op = Add | Mul | Break | Input | Output | JIT | JIF | LT | Eq
 type mode = Position | Immediate
 type operation =
   | Nullary of op
@@ -26,12 +26,18 @@ let get_operator instruction =
   | 2 -> Trinary (Mul, mode_left, mode_middle, Immediate)
   | 3 -> Unary (Input, Immediate)
   | 4 -> Unary (Output, Position)
+  | 5 -> Binary (JIT, mode_left, mode_middle)
+  | 6 -> Binary (JIF, mode_left, mode_middle)
+  | 7 -> Trinary (LT, mode_left, mode_middle, Immediate)
+  | 8 -> Trinary (Eq, mode_left, mode_middle, Immediate)
   | 99 -> Unary (Break, Position)
   | n -> raise (Bad_argument n)
 
 let op_to_fun = function
   | Add -> ( + )
   | Mul -> ( * )
+  | LT -> fun x y -> if x < y then 1 else 0
+  | Eq -> fun x y -> if x = y then 1 else 0
   | op -> raise (Bad_operator op)
 
 let get_value state mode arg =
@@ -56,7 +62,12 @@ let rec execute ~state ~pos ~input =
      let target_pos = get_value state mode_right (pos + 3) in
      state.(target_pos) <- ((op_to_fun op) val_a val_b);
      execute ~state:state ~pos:(pos + 4) ~input:input
-  | Binary (op, _, _) -> raise (Bad_operator op)
+  | Binary (op, mode_left, mode_right) ->
+     let val_a = get_value state mode_left (pos + 1) in
+     let val_b = get_value state mode_right (pos + 2) in
+     let pred = match op with | JIT -> ((=) 0) | JIF -> ((!=) 0) in
+     let next_pos = if (pred val_a) then val_b else pos + 3 in
+     execute ~state:state ~pos:next_pos ~input:input
 
 let adjust_state ~noun ~verb ~state =
   state.(1) <- noun;
