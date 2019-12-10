@@ -22,8 +22,10 @@ let get_operator instruction =
   let mode_middle = (instruction / 1000) mod 10 |> get_mode in
   let mode_right = (instruction / 10000) |> get_mode in
   match operation with
-  | 1 -> Trinary (Add, mode_left, mode_middle, mode_right)
-  | 2 -> Trinary (Mul, mode_left, mode_middle, mode_right)
+  | 1 -> Trinary (Add, mode_left, mode_middle, Immediate)
+  | 2 -> Trinary (Mul, mode_left, mode_middle, Immediate)
+  | 3 -> Unary (Input, Immediate)
+  | 4 -> Unary (Output, Position)
   | 99 -> Unary (Break, Position)
   | n -> raise (Bad_argument n)
 
@@ -35,24 +37,31 @@ let op_to_fun = function
 let get_value state mode arg =
   match mode with
   | Position -> state.(state.(arg))
-  | Immediate -> arg
+  | Immediate -> state.(arg)
 
-let rec execute ~state ~pos =
+let rec execute ~state ~pos ~input =
   match get_operator state.(pos) with
   | Unary (Break, Position) -> state.(0)
-  | Unary (Input, _) -> raise (Bad_operator Input)
-  | Unary (Output, _) -> raise (Bad_operator Output)
+  | Unary (Input, mode) ->
+     let target_pos = get_value state mode (pos + 1) in
+     state.(target_pos) <- input;
+     execute ~state:state ~pos:(pos + 2) ~input:input
+  | Unary (Output, mode) ->
+     let v = get_value state mode (pos + 1) in
+     Printf.printf "Diagnostics code: %d\n" v;
+     execute ~state:state ~pos:(pos + 2) ~input:input
   | Trinary (op, mode_left, mode_middle, mode_right) ->
      let val_a = get_value state mode_left (pos + 1) in
      let val_b = get_value state mode_middle (pos + 2) in
-     let target_pos = state.(pos + 3) in
+     let target_pos = get_value state mode_right (pos + 3) in
      state.(target_pos) <- ((op_to_fun op) val_a val_b);
-     execute ~state:state ~pos:(pos + 4)
+     execute ~state:state ~pos:(pos + 4) ~input:input
+  | Binary (op, _, _) -> raise (Bad_operator op)
 
 let adjust_state ~noun ~verb ~state =
   state.(1) <- noun;
   state.(2) <- verb
 
-let run ~noun ~verb input =
-  adjust_state ~noun:noun ~verb:verb ~state:input;
-  execute ~state:input ~pos:0
+let run ~noun ~verb ~input state =
+  adjust_state ~noun:noun ~verb:verb ~state:state;
+  execute ~state:state ~pos:0 ~input:input

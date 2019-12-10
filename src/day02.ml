@@ -5,14 +5,14 @@ open Intcode
 let day02_1 =
   Aoc_lib.array_of_csv_of_file "input02.txt"
   |> Array.map ~f:int_of_string
-  |> Intcode.run ~noun:12 ~verb:2
+  |> Intcode.run ~noun:12 ~verb:2 ~input:0
 
 let day02_2 =
   let rec iterative_run n v =
-    let input = Aoc_lib.array_of_csv_of_file "input02.txt"
+    let state = Aoc_lib.array_of_csv_of_file "input02.txt"
                 |> Array.map ~f:int_of_string
     in
-    let res = Intcode.run ~noun:n ~verb:v input in
+    let res = Intcode.run ~noun:n ~verb:v ~input:0 state in
     match res with
     | 19690720 -> (n, v)
     | _ -> match n with
