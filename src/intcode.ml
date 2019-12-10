@@ -4,31 +4,33 @@ type op = Add | Mul | Break | Input | Output
 type mode = Position | Immediate
 type operation =
   | Nullary of op
-  | Unary of (mode * op)
-  | Binary of (mode * mode * op)
-  | Trinary of (mode * mode * mode * op)
+  | Unary of (op * mode)
+  | Binary of (op * mode * mode)
+  | Trinary of (op * mode * mode * mode)
 
-exception Bad_argument
+exception Bad_argument of int
+exception Bad_operator of op
 
-let pad_to_two = function
-  | [c] -> ['0'; c]
-  | cs -> cs
+let get_mode = function
+  | 0 -> Position
+  | 1 -> Immediate
+  | n -> raise (Bad_argument n)
 
-let parse_operator data =
-  char_list_of_int data |> pad_to_two |> String.of_char_list
-
-let get_operator params pos =
-  let instruction = pad_to_five params.(pos) in
-  match parse_operator instruction with
-  | "01" -> (Position, Add)
-  | "02" -> (Position, Mul)
-  | "99" -> (Position, Break)
-  | _ -> raise Bad_argument
+let get_operator instruction =
+  let operation = instruction mod 100 in
+  let mode_left = (instruction / 100) mod 10 |> get_mode in
+  let mode_middle = (instruction / 1000) mod 10 |> get_mode in
+  let mode_right = (instruction / 10000) |> get_mode in
+  match operation with
+  | 1 -> Trinary (Add, mode_left, mode_middle, mode_right)
+  | 2 -> Trinary (Mul, mode_left, mode_middle, mode_right)
+  | 99 -> Unary (Break, Position)
+  | n -> raise (Bad_argument n)
 
 let op_to_fun = function
   | Add -> ( + )
   | Mul -> ( * )
-  | _ -> raise Bad_argument
+  | op -> raise (Bad_operator op)
 
 let get_value state mode arg =
   match mode with
@@ -36,13 +38,13 @@ let get_value state mode arg =
   | Immediate -> arg
 
 let rec execute ~state ~pos =
-  match get_operator state pos with
-  | (_, Break) -> state.(0)
-  | (_, Input) -> raise Bad_argument
-  | (_, Output) -> raise Bad_argument
-  | (mode, op) ->
-     let val_a = get_value state mode (pos + 1) in
-     let val_b = get_value state mode (pos + 2) in
+  match get_operator state.(pos) with
+  | Unary (Break, Position) -> state.(0)
+  | Unary (Input, _) -> raise (Bad_operator Input)
+  | Unary (Output, _) -> raise (Bad_operator Output)
+  | Trinary (op, mode_left, mode_middle, mode_right) ->
+     let val_a = get_value state mode_left (pos + 1) in
+     let val_b = get_value state mode_middle (pos + 2) in
      let target_pos = state.(pos + 3) in
      state.(target_pos) <- ((op_to_fun op) val_a val_b);
      execute ~state:state ~pos:(pos + 4)
