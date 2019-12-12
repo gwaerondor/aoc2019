@@ -40,3 +40,14 @@ let rec range a b =
   if a < b then a :: (range (a + 1) b)
   else if a > b then a :: (range (a - 1) b)
   else [a]
+
+let remove_duplicates list ~equal =
+  let rec rd list acc =
+    match list with
+    | [] -> acc
+    | (e :: r) -> if List.mem acc ~equal:equal e
+                  then rd r acc
+                  else rd r (e::acc)
+  in rd list []
+
+let sum = List.fold_left ~f:(+) ~init:0

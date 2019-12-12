@@ -67,15 +67,6 @@ let print_visited coords =
 let compare_tuples (x1, y1) (x2, y2) =
   x1 = x2 && y1 = y2
 
-let remove_duplicates list =
-  let rec rd list acc =
-    match list with
-    | [] -> acc
-    | (e :: r) -> if List.mem acc ~equal:compare_tuples e
-                  then rd r acc
-                  else rd r (e::acc)
-  in rd list []
-
 let intersect left_list right_list =
   List.filter ~f:(List.mem right_list ~equal:compare_tuples) left_list
 

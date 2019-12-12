@@ -6,9 +6,8 @@ let inputs = to_numbers (Aoc_lib.lines_of_file "input01.txt")
 
 let fuel_consumption mass = (mass / 3) - 2
 let consumption_per_module = List.map ~f:fuel_consumption inputs
-let sum = List.fold_left ~f:(+) ~init:0
 
-let day01_a = sum consumption_per_module
+let day01_a = Aoc_lib.sum consumption_per_module
 
 let rec calculate_mass_with_added_fuel mass ~acc:sum =
     match fuel_consumption mass with
