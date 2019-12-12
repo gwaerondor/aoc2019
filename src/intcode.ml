@@ -25,7 +25,7 @@ let get_operator instruction =
   | 1 -> Trinary (Add, mode_left, mode_middle, Immediate)
   | 2 -> Trinary (Mul, mode_left, mode_middle, Immediate)
   | 3 -> Unary (Input, Immediate)
-  | 4 -> Unary (Output, Position)
+  | 4 -> Unary (Output, mode_left)
   | 5 -> Binary (JIT, mode_left, mode_middle)
   | 6 -> Binary (JIF, mode_left, mode_middle)
   | 7 -> Trinary (LT, mode_left, mode_middle, Immediate)
@@ -65,8 +65,8 @@ let rec execute ~state ~pos ~input =
   | Binary (op, mode_left, mode_right) ->
      let val_a = get_value state mode_left (pos + 1) in
      let val_b = get_value state mode_right (pos + 2) in
-     let pred = match op with | JIT -> ((=) 0) | JIF -> ((!=) 0) in
-     let next_pos = if (pred val_a) then val_b else pos + 3 in
+     let p = match op with | JIT -> ((!=) 0) | JIF -> ((=) 0) in
+     let next_pos = if (p val_a) then val_b else pos + 3 in
      execute ~state:state ~pos:next_pos ~input:input
 
 let adjust_state ~noun ~verb ~state =
