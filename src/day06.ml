@@ -3,6 +3,7 @@ open Aoc_lib
 type node = Node of string
 type orbit = Orbit of node * node
 exception Bad_argument
+exception Target_not_found
 
 let input = lines_of_file "input06.txt"
 
@@ -34,12 +35,47 @@ let rec find_parent node orbits =
      then Some parent
      else find_parent node os
 
-let rec steps ~orbits node =
+let rec path_to_root ~orbits node =
   match find_parent node orbits with
-  | Some parent -> 1 + (steps ~orbits:orbits parent)
-  | None -> 0
+  | None -> [node]
+  | Some parent -> node :: (path_to_root ~orbits parent)
 
-let day06_1 = List.map ~f:(steps ~orbits:orbits) all_nodes |> Aoc_lib.sum
+let steps ~orbits node =
+  List.length (path_to_root ~orbits:orbits node) - 1
+
+(* let rec steps ~orbits node =
+ *   match find_parent node orbits with
+ *   | Some parent -> 1 + (steps ~orbits:orbits parent)
+ *   | None -> 0 *)
+
+let rec steps_to_target ~orbits ~target node =
+  match find_parent node orbits with
+  | None -> raise Target_not_found
+  | Some parent when nodes_are_equal parent target -> 0
+  | Some parent -> 1 + (steps_to_target ~orbits:orbits ~target:target parent)
+
+let day06_1 =
+  List.map ~f:(steps ~orbits:orbits) all_nodes
+  |> Aoc_lib.sum
+
+let find_first_common_ancestor ~orbits n1 n2 =
+  let n1_path = path_to_root ~orbits:orbits n1 in
+  let rec find_first_match path node =
+    match path with
+    | n :: r -> if nodes_are_equal node n
+                then n
+                else find_first_match r node
+    | [] -> raise Target_not_found
+  in find_first_match n1_path n2
+
+let day06_2 =
+  let santa = Node "SAN" in
+  let me = Node "YOU" in
+  let first_ancestor = find_first_common_ancestor ~orbits:orbits santa me in
+  let santa_s = steps_to_target ~orbits:orbits ~target:first_ancestor santa in
+  let me_s = steps_to_target ~orbits:orbits ~target:first_ancestor me in
+  santa_s + me_s - 2
 
 let () =
-  Printf.printf "Part 1: %d\n" day06_1
+  Printf.printf "Part 1: %d\n" day06_1;
+  Printf.printf "Part 2: %d\n" day06_2
