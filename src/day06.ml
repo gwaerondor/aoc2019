@@ -61,11 +61,12 @@ let day06_1 =
 let find_first_common_ancestor ~orbits n1 n2 =
   let n1_path = path_to_root ~orbits:orbits n1 in
   let rec find_first_match path node =
-    match path with
-    | n :: r -> if nodes_are_equal node n
-                then n
-                else find_first_match r node
-    | [] -> raise Target_not_found
+    if List.mem ~equal:nodes_are_equal n1_path node
+    then node
+    else
+      match (find_parent node orbits) with
+      | Some next -> find_first_match path next
+      | None -> raise Target_not_found
   in find_first_match n1_path n2
 
 let day06_2 =
@@ -74,7 +75,7 @@ let day06_2 =
   let first_ancestor = find_first_common_ancestor ~orbits:orbits santa me in
   let santa_s = steps_to_target ~orbits:orbits ~target:first_ancestor santa in
   let me_s = steps_to_target ~orbits:orbits ~target:first_ancestor me in
-  santa_s + me_s - 2
+  santa_s + me_s
 
 let () =
   Printf.printf "Part 1: %d\n" day06_1;
