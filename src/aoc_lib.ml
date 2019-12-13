@@ -51,3 +51,13 @@ let remove_duplicates list ~equal =
   in rd list []
 
 let sum = List.fold_left ~f:(+) ~init:0
+
+let min xs =
+  match List.hd xs with
+  | None -> raise Bad_argument
+  | Some e -> List.fold_left ~init:e ~f:min xs
+
+let max xs =
+  match List.hd xs with
+  | None -> raise Bad_argument
+  | Some e -> List.fold_left ~init:e ~f:max xs

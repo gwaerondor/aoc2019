@@ -73,7 +73,6 @@ let intersect left_list right_list =
 let distance_to_origo (x, y) = (abs x) + (abs y)
 
 let big_number = 10000000
-let min = List.fold_left ~init:big_number ~f:min
 
 let without_origo list =
   List.filter ~f:(fun e -> not (compare_tuples (0, 0) e)) list
@@ -85,5 +84,5 @@ let day03_1 =
   let visited_by_first_wire = record_path first_wire |> without_origo in
   let visited_by_second_wire = record_path second_wire |> without_origo in
   let intersections = intersect visited_by_first_wire visited_by_second_wire in
-  let closest = List.map ~f:distance_to_origo intersections |> min in
+  let closest = List.map ~f:distance_to_origo intersections |> Aoc_lib.min in
   Printf.printf "Part 1: %d\n" closest
